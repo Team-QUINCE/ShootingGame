@@ -26,9 +26,11 @@ var cowboy;
 var Enemy = (function() {
   
   function Enemy() {
+    
     this.shootDelay = (Math.random() * 2 + 3) * 1000;  
     this.reactionTime = (Math.random() + 1) * 1000;
     this.walkingTime = 1500;
+
     this.startTime = new Date().getTime();
     this.x = 100;
     this.y = 250;
@@ -76,48 +78,42 @@ var Enemy = (function() {
     // В момента използавам двете съществуващи анимации (animationWalking и standAnimation), за да се видижа кога се сменят
   }
 
-  Enemy.prototype.update = function(timeFromLastUpdate) {
-    var currentTime = new Date().getTime();
+  Enemy.prototype.changeState = function(newState) {
+    this.state = newState;
 
-    if((currentTime - this.startTime) < this.walkingTime) {
+    switch(this.state) {
+        case 'standing':
+            stage.removeChild(this.animationWalking);
+            this.standAnimation.x = this.x;
+            this.standAnimation.y = this.y;
+            stage.addChild(this.standAnimation); break;
+        case 'shooting':
+            stage.removeChild(this.standAnimation);
+            stage.addChild(this.animationWalking);
+            stage.addChild(this.fireText); break;
+        case 'winning':
+            stage.removeChild(this.fireText);
+            stage.addChild(this.deadText); break;
+        case 'dead':
+            stage.removeChild(this.fireText);
+            stage.removeChild(this.animationWalking);
+            stage.addChild(this.standAnimation);
+    }
+  };
+
+  Enemy.prototype.update = function(timeFromLastUpdate) {
+
+    if(this.state === 'walking') {
         var dx = timeFromLastUpdate / 1000 * 100;
         this.x += dx;
         this.animationWalking.x = this.x;  
         console.log('walk');
 
-    }else if((currentTime - this.startTime) < (this.walkingTime + this.shootDelay) && this.state === 'walking') {
-        stage.removeChild(this.animationWalking);
-        this.standAnimation.x = this.x;
-        this.standAnimation.y = this.y;
-        stage.addChild(this.standAnimation);
-        this.state = 'standing';  
-        console.log('stand');  
-
-    }else if((currentTime - this.startTime) >= (this.walkingTime + this.shootDelay + this.reactionTime) && this.state === 'shooting') {
-        stage.removeChild(this.fireText);
-        stage.addChild(this.deadText);
-        playerState = 'dead';
-
-    }else if((currentTime - this.startTime) >= (this.walkingTime + this.shootDelay) && this.state === 'standing') {
-        stage.removeChild(this.standAnimation);
-        stage.addChild(this.animationWalking);
-        this.state = 'shooting';
-        stage.addChild(this.fireText);
-        console.log('shoot');  
-    }
-
-    if(this.state === 'dead') {
-        stage.removeChild(this.animationWalking);
-        stage.addChild(this.standAnimation);
     }
   };
 
   Enemy.prototype.getState = function() {
     return this.state;
-  };
-
-  Enemy.prototype.setState = function(state) {
-    this.state = state;
   };
 
   Enemy.prototype.getX = function() {
@@ -205,6 +201,9 @@ function queueLoaded(event) {
     stage.addChild(crossHair);
 
     cowboy = new Enemy();
+    cowboy.standing = setTimeout(function() { cowboy.changeState('standing'); }, 1500);
+    cowboy.shooting = setTimeout(function() { cowboy.changeState('shooting'); }, cowboy.shootDelay + 1500);
+    cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + 1500);
 
     //Add ticker
     createjs.Ticker.setFPS(30);
@@ -241,15 +240,17 @@ function handleMouseDown(event) {
 
         var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
         text.x = 200;
-        text.y = 10;
+        text.y = 50;
         stage.addChild(text);
+        setTimeout(function() {stage.removeChild(text);}, 1500);
 
     }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && playerState !== 'dead') {
-        cowboy.setState('dead');
-        
+        cowboy.changeState('dead');
+        clearTimeout(cowboy.winning);
+
         var textWin = new createjs.Text("You win !", "36px Arial", "#FFF");
         textWin.x = 200;
-        textWin.y = 50;
+        textWin.y = 10;
         stage.addChild(textWin);
     }    
 }
