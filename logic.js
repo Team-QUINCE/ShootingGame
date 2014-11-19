@@ -1,7 +1,7 @@
 var context;
 var queue;
-var WIDTH = 1024;
-var HEIGHT = 768;
+var WIDTH = 724;
+var HEIGHT = 368;
 var mouseXPosition;
 var mouseYPosition;
 var batImage;
@@ -19,17 +19,18 @@ var gameTimer;
 var gameTime = 0;
 var timerText;
 
-
+var map = [];
+var crossHair;
 var cowboy;
 
 
 
 var Enemy = (function() {
   
-  function Enemy() {
+  function Enemy(minimumReactionTime) {
     
     this.shootDelay = (Math.random() * 2 + 3) * 1000;  
-    this.reactionTime = (Math.random() + 1) * 1000;
+    this.reactionTime = (Math.random() + minimumReactionTime) * 1000;
     this.walkingTime = 1500;
 
     this.startTime = new Date().getTime();
@@ -86,15 +87,20 @@ var Enemy = (function() {
             stage.addChild(this.standAnimation); break;
         case 'shooting':
             stage.removeChild(this.standAnimation);
+            crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
+            setCrossHairPosition();
+            stage.addChild(crossHair);
             stage.addChild(this.animationWalking);
             stage.addChild(this.fireText); break;
         case 'winning':
             stage.removeChild(this.fireText);
+            stage.removeChild(crossHair);
             stage.addChild(this.deadText); break;
         case 'dead':
             stage.removeChild(this.fireText);
             stage.removeChild(this.animationWalking);
-            stage.addChild(this.standAnimation);
+            stage.removeChild(crossHair);
+            stage.addChild(this.standAnimation); break;
     }
   };
 
@@ -121,6 +127,16 @@ var Enemy = (function() {
 
   return Enemy;
 })();
+
+function setCrossHairPosition () {
+    var side = Math.round(Math.random());
+
+    var leftBound = side === 0 ? 0 : 0.8 * WIDTH; 
+    var rightBound = side === 0 ? 0.2 * WIDTH : WIDTH;
+
+    crossHair.x = Math.random() * (rightBound - leftBound) + leftBound - 45;
+    crossHair.y = Math.random() * HEIGHT - 45;
+}
 
 window.onload = function() {
     //Setting up canvas
@@ -192,10 +208,10 @@ function queueLoaded(event) {
     });
 
     //Create mouse
-    crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
-    stage.addChild(crossHair);
+    // crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
+    // stage.addChild(crossHair);
 
-    cowboy = new Enemy();
+    cowboy = new Enemy(1.5);
     cowboy.standing = setTimeout(function() { cowboy.changeState('standing'); }, cowboy.walkingTime);
     cowboy.shooting = setTimeout(function() { cowboy.changeState('shooting'); }, cowboy.shootDelay + cowboy.walkingTime);
     cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + cowboy.walkingTime);
@@ -207,8 +223,11 @@ function queueLoaded(event) {
     createjs.Ticker.addEventListener('tick', tickEvent);
 
     //Set up events AFTER the game is loaded;
-    window.onmousemove = handleMouseMove;
-    window.onmousedown = handleMouseDown;
+
+    //window.onmousemove = handleMouseMove;
+    //window.onmousedown = handleMouseDown;
+    window.onkeydown = handleKeyDown;
+    window.onkeyup = handleKeyUp;
 }
 
 function tickEvent(event) {//TODO - this is to move the enemy around, it will be useful to change
@@ -218,39 +237,94 @@ function tickEvent(event) {//TODO - this is to move the enemy around, it will be
 
 }
 
-function handleMouseMove(event) {
-    //Offset the position by 45 pixels so mouse is in center of crosshair
-    //TODO - may not need to do that later on
-    crossHair.x = event.clientX-45;
-    crossHair.y = event.clientY-45;
+// function handleMouseMove(event) {
+//     //Offset the position by 45 pixels so mouse is in center of crosshair
+//     //TODO - may not need to do that later on
+//     crossHair.x = event.clientX-45;
+//     crossHair.y = event.clientY-45;
+// }
+
+// function handleMouseDown(event) {
+
+//     var shotX = Math.round(event.clientX);
+//     var shotY = Math.round(event.clientY);
+
+//     if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
+
+//         var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
+//         text.x = 200;
+//         text.y = 50;
+//         stage.addChild(text);
+//         setTimeout(function() {stage.removeChild(text);}, 1500);
+
+//     }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && cowboy.getState() !== 'winning') {
+//         cowboy.changeState('dead');
+//         clearTimeout(cowboy.winning);
+
+//         var textWin = new createjs.Text("You win !", "36px Arial", "#FFF");
+//         textWin.x = 200;
+//         textWin.y = 10;
+//         stage.addChild(textWin);
+
+//         createjs.Sound.play("shot");
+//     }else {
+//         createjs.Sound.play("shot");
+//     }
+// }
+
+function handleKeyUp (e) {
+    if (e.keyCode in map) {
+        map[e.keyCode] = false;
+    }
 }
 
-function handleMouseDown(event) {
-    
-    var shotX = Math.round(event.clientX);
-    var shotY = Math.round(event.clientY);
+function handleKeyDown (e) {
 
-    if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
+    map[e.keyCode] = true;
 
-        var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
-        text.x = 200;
-        text.y = 50;
-        stage.addChild(text);
-        setTimeout(function() {stage.removeChild(text);}, 1500);
+    for(var i in map) {
+        if(map[i]) {
+            var keyCode = i;
+            
+            if(keyCode == 37) {
+                crossHair.x -= 10;
 
-    }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && cowboy.getState() !== 'winning') {
-        cowboy.changeState('dead');
-        clearTimeout(cowboy.winning);
+            }else if(keyCode == 39) {
+                crossHair.x += 10;
+            }else if(keyCode == 38) {
+                crossHair.y -= 10;
 
-        var textWin = new createjs.Text("You win !", "36px Arial", "#FFF");
-        textWin.x = 200;
-        textWin.y = 10;
-        stage.addChild(textWin);
+            }else if(keyCode == 40) {
+                crossHair.y += 10;
 
-        createjs.Sound.play("shot");
-    }else {
-        createjs.Sound.play("shot");
-    }
+            }else if(keyCode == 32) {
+                var shotX = crossHair.x + 45;
+                var shotY = crossHair.y + 45;
+
+                if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
+                    console.log('not all');
+                    var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
+                    text.x = 200;
+                    text.y = 50;
+                    stage.addChild(text);
+                    setTimeout(function() {stage.removeChild(text);}, 1500);
+
+                }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && cowboy.getState() !== 'winning') {
+                    cowboy.changeState('dead');
+                    clearTimeout(cowboy.winning);
+ 
+                    var textWin = new createjs.Text("You win !", "36px Arial", "#FFF");
+                    textWin.x = 200;
+                    textWin.y = 10;
+                    stage.addChild(textWin);
+
+                    createjs.Sound.play("shot");
+                }else if(cowboy.getState() !== 'winning'){
+                    createjs.Sound.play("shot");
+                }
+            }
+        }
+    }    
 }
 
 function createTextContainer(textInput, whiteSpace, width) {
