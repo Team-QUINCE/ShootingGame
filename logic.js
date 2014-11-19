@@ -18,9 +18,10 @@ var scoreText;
 var gameTimer;
 var gameTime = 0;
 var timerText;
-var playerState = 'alive';
+
 
 var cowboy;
+
 
 
 var Enemy = (function() {
@@ -36,13 +37,9 @@ var Enemy = (function() {
     this.y = 250;
     this.state = 'walking';
 
-    this.fireText = new createjs.Text("FIRE !!!", "36px Arial", "#FFF");
-    this.fireText.x = 200;
-    this.fireText.y = 10;
-
-    this.deadText = new createjs.Text("You are dead !", "36px Arial", "#FFF");
-    this.deadText.x = 200;
-    this.deadText.y = 10;
+    this.fireText = createTextContainer('FIRE !!!', 20, 150);
+    this.deadText = createTextContainer('You are dead !', 5, 225);
+    
 
     this.animationWalking = new createjs.Sprite(spriteSheet, "flap");
     this.animationWalking.regX = 99;
@@ -107,8 +104,6 @@ var Enemy = (function() {
         var dx = timeFromLastUpdate / 1000 * 100;
         this.x += dx;
         this.animationWalking.x = this.x;  
-        console.log('walk');
-
     }
   };
 
@@ -130,6 +125,7 @@ var Enemy = (function() {
 window.onload = function() {
     //Setting up canvas
     var canvas = document.getElementById('myCanvas');
+    canvas.style.cursor = 'none';
     context = canvas.getContext('2d');
     context.canvas.width = WIDTH;
     context.canvas.height = HEIGHT;
@@ -195,16 +191,16 @@ function queueLoaded(event) {
         "animations": {"die": [0,7]}
     });
 
-
     //Create mouse
     crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
     stage.addChild(crossHair);
 
     cowboy = new Enemy();
-    cowboy.standing = setTimeout(function() { cowboy.changeState('standing'); }, 1500);
-    cowboy.shooting = setTimeout(function() { cowboy.changeState('shooting'); }, cowboy.shootDelay + 1500);
-    cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + 1500);
+    cowboy.standing = setTimeout(function() { cowboy.changeState('standing'); }, cowboy.walkingTime);
+    cowboy.shooting = setTimeout(function() { cowboy.changeState('shooting'); }, cowboy.shootDelay + cowboy.walkingTime);
+    cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + cowboy.walkingTime);
 
+    
     //Add ticker
     createjs.Ticker.setFPS(30);
     createjs.Ticker.addEventListener('tick', stage);
@@ -230,13 +226,11 @@ function handleMouseMove(event) {
 }
 
 function handleMouseDown(event) {
-    //Play gunshot sound
-    createjs.Sound.play("shot");
-
+    
     var shotX = Math.round(event.clientX);
     var shotY = Math.round(event.clientY);
 
-    if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead') {
+    if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
 
         var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
         text.x = 200;
@@ -244,7 +238,7 @@ function handleMouseDown(event) {
         stage.addChild(text);
         setTimeout(function() {stage.removeChild(text);}, 1500);
 
-    }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && playerState !== 'dead') {
+    }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && cowboy.getState() !== 'winning') {
         cowboy.changeState('dead');
         clearTimeout(cowboy.winning);
 
@@ -252,5 +246,28 @@ function handleMouseDown(event) {
         textWin.x = 200;
         textWin.y = 10;
         stage.addChild(textWin);
-    }    
+
+        createjs.Sound.play("shot");
+    }else {
+        createjs.Sound.play("shot");
+    }
+}
+
+function createTextContainer(textInput, whiteSpace, width) {
+    container = new createjs.Container(); 
+
+    var g = new createjs.Graphics(); 
+    g.setStrokeStyle(2); g.beginStroke(createjs.Graphics.getRGB(0, 0, 0)); g.beginFill(createjs.Graphics.getRGB(255, 255, 255)); g.drawRoundRect(0, 0, width, 60, 20);
+    var s = new createjs.Shape(g);
+
+    var text = new createjs.Text(textInput, "32px Arial", "#000");
+    text.x = whiteSpace;
+    text.y = 10;
+    
+    container.addChild(s);
+    container.addChild(text);
+    container.x = 50;
+    container.y = 50;
+
+    return container;
 }
