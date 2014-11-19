@@ -1,23 +1,12 @@
 var context;
 var queue;
-var WIDTH = 724;
-var HEIGHT = 368;
-var mouseXPosition;
-var mouseYPosition;
-var batImage;
-var stage;
-var animation;
-var deathAnimation;
-var spriteSheet;
-var enemyXPos = 100;
-var enemyYPos = 100;
-var enemyXSpeed = 1.5;
-var enemyYSpeed = 1.75;
-var score = 0;
-var scoreText;
-var gameTimer;
-var gameTime = 0;
-var timerText;
+var WIDTH = 691;
+var HEIGHT = 345;
+
+var shootSpriteSheet;
+var walkSpriteSheet;
+var standSpriteSheet;
+var winSpriteSheet;
 
 var map = [];
 var crossHair;
@@ -31,10 +20,10 @@ var Enemy = (function() {
     
     this.shootDelay = (Math.random() * 2 + 3) * 1000;  
     this.reactionTime = (Math.random() + minimumReactionTime) * 1000;
-    this.walkingTime = 1500;
+    this.walkingTime = 3400;
 
     this.startTime = new Date().getTime();
-    this.x = 100;
+    this.x = 50;
     this.y = 250;
     this.state = 'walking';
 
@@ -42,38 +31,29 @@ var Enemy = (function() {
     this.deadText = createTextContainer('You are dead !', 5, 225);
     
 
-    this.animationWalking = new createjs.Sprite(spriteSheet, "flap");
+    this.animationWalking = new createjs.Sprite(walkSpriteSheet, "walk");
     this.animationWalking.regX = 99;
     this.animationWalking.regY = 58;
     this.animationWalking.x = this.x;
     this.animationWalking.y = this.y;
-    this.animationWalking.gotoAndPlay("flap");
+    this.animationWalking.gotoAndPlay("walk");
     stage.addChildAt(this.animationWalking, 1);
 
-    this.standAnimation = new createjs.Sprite(batDeathSpriteSheet, "die");
+    this.standAnimation = new createjs.Sprite(standSpriteSheet, "stand");
     this.standAnimation.regX = 99;
     this.standAnimation.regY = 58;
-    this.standAnimation.x = this.x;
-    this.standAnimation.y = this.y;
-    this.standAnimation.gotoAndPlay("die");
+    this.standAnimation.gotoAndPlay("stand");
 
     // ***shooting animation
-    // this.animationShooting = new createjs.Sprite(spriteSheet, "flap");
-    // this.animationShooting.regX = 99;
-    // this.animationShooting.regY = 58;
-    // this.animationShooting.x = this.x;
-    // this.animationShooting.y = this.y;
-    // this.animationShooting.gotoAndPlay("flap");
+    this.animationShooting = new createjs.Sprite(shootSpriteSheet, "shoot");
+    this.animationShooting.regX = 99;
+    this.animationShooting.regY = 58;
+    this.animationShooting.gotoAndPlay("shoot");
 
-    // ***dead animation
-    // this.animationDead = new createjs.Sprite(spriteSheet, "flap");
-    // this.animationDead.regX = 99;
-    // this.animationDead.regY = 58;
-    // this.animationDead.x = this.x;
-    // this.animationDead.y = this.y;
-    // this.animationDead.gotoAndPlay("flap");
-
-    // В момента използавам двете съществуващи анимации (animationWalking и standAnimation), за да се видижа кога се сменят
+    this.animationWinning = new createjs.Sprite(winSpriteSheet, "win");
+    this.animationWinning.regX = 99;
+    this.animationWinning.regY = 58;
+    this.animationWinning.gotoAndPlay("win");
   }
 
   Enemy.prototype.changeState = function(newState) {
@@ -90,12 +70,18 @@ var Enemy = (function() {
             crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
             setCrossHairPosition();
             stage.addChild(crossHair);
-            stage.addChild(this.animationWalking);
+            this.animationShooting.x = this.x;
+            this.animationShooting.y = this.y;
+            stage.addChild(this.animationShooting);
             stage.addChild(this.fireText); break;
         case 'winning':
             stage.removeChild(this.fireText);
             stage.removeChild(crossHair);
-            stage.addChild(this.deadText); break;
+            stage.removeChild(this.animationShooting);
+            stage.addChild(this.deadText);
+            this.animationWinning.x = this.x;
+            this.animationWinning.y = this.y;
+            stage.addChild(this.animationWinning); break;
         case 'dead':
             stage.removeChild(this.fireText);
             stage.removeChild(this.animationWalking);
@@ -153,8 +139,6 @@ window.onload = function() {
     queue.on("complete", queueLoaded, this);
     createjs.Sound.alternateExtensions = ["ogg"];
 
-    //Create a load manifest for all assets
-    //TODO - change this
     queue.loadManifest([
         {id: 'backgroundImage', src: 'assets/background.png'},
         {id: 'crossHair', src: 'assets/crosshair.png'},
@@ -163,13 +147,12 @@ window.onload = function() {
         {id: 'gameOverSound', src: 'assets/gameOver.mp3'},
         {id: 'tick', src: 'assets/tick.mp3'},
         {id: 'deathSound', src: 'assets/die.mp3'},
-        {id: 'batSpritesheet', src: 'assets/batSpritesheet.png'},
-        {id: 'batDeath', src: 'assets/batDeath.png'}
+        {id: 'cowboyWalking', src: 'assets/walkingSpriteSheet.png'},
+        {id: 'cowboyShooting', src: 'assets/shootingSpriteSheet.png'},
+        {id: 'cowboyStanding', src: 'assets/standingSpriteSheet.png'},
+        {id: 'cowboyWinning', src: 'assets/winSpriteSheet.png'}
     ]);
     queue.load();
-
-    //update once per second
-    // gameTimer = setInterval(updateTime, 1000);
 };
 
 function queueLoaded(event) {
@@ -178,51 +161,53 @@ function queueLoaded(event) {
     stage.addChild(backgroundImage);
 
     //Add Score
-    scoreText = new createjs.Text("1UP: " + score.toString(), "36px Arial", "#FFF");
-    scoreText.x = 10;
-    scoreText.y = 10;
-    stage.addChild(scoreText);
-
-    //Add Timer
-    timerText = new createjs.Text("Time: " + gameTime.toString(), "36px Arial", "#FFF");
-    timerText.x = 800;
-    timerText.y = 10;
-    stage.addChild(timerText);
+    // scoreText = new createjs.Text("1UP: " + score.toString(), "36px Arial", "#FFF");
+    // scoreText.x = 10;
+    // scoreText.y = 10;
+    // stage.addChild(scoreText);
 
     //Play background music
     createjs.Sound.play("background", {loop: -1});
 
     //Create enemy spritesheet
-    spriteSheet = new createjs.SpriteSheet({
-       "images": [queue.getResult('batSpritesheet')],
-        "frames": {"width": 198, "height" : 117},
-        "animations": {"flap": [0,4]}
+    walkSpriteSheet = new createjs.SpriteSheet({
+       "images": [queue.getResult('cowboyWalking')],
+        "frames": {"width": 128, "height" : 128},
+        "animations": {"walk": [0, 10]},
+        'framerate': 20
     });
 
     //Create enemy death spritesheet
-    batDeathSpriteSheet = new createjs.SpriteSheet({
-        "images": [queue.getResult('batDeath')],
-        "frames": {"width": 198, "height": 148},
-        //"animations": {"die": [0,7,false,1]}
-        "animations": {"die": [0,7]}
+    shootSpriteSheet = new createjs.SpriteSheet({
+        "images": [queue.getResult('cowboyShooting')],
+        "frames": {"width": 128, "height": 128},
+        "animations": {"shoot": [0, 4, false, 1]},
+        'framerate': 20
     });
 
-    //Create mouse
-    // crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
-    // stage.addChild(crossHair);
+    standSpriteSheet = new createjs.SpriteSheet({
+        "images": [queue.getResult('cowboyStanding')],
+        "frames": {"width": 128, "height": 128},
+        "animations": {"stand": [0, 0, false, 1]},
+        'framerate': 20
+    });
 
-    cowboy = new Enemy(1.5);
+    winSpriteSheet = new createjs.SpriteSheet({
+        "images": [queue.getResult('cowboyWinning')],
+        "frames": {"width": 128, "height": 128},
+        "animations": {"win": {"frames": [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1], "speed": 0.7}},
+        'framerate': 20
+    });
+
+    cowboy = new Enemy(3.5);
     cowboy.standing = setTimeout(function() { cowboy.changeState('standing'); }, cowboy.walkingTime);
     cowboy.shooting = setTimeout(function() { cowboy.changeState('shooting'); }, cowboy.shootDelay + cowboy.walkingTime);
     cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + cowboy.walkingTime);
 
-    
     //Add ticker
     createjs.Ticker.setFPS(30);
     createjs.Ticker.addEventListener('tick', stage);
     createjs.Ticker.addEventListener('tick', tickEvent);
-
-    //Set up events AFTER the game is loaded;
 
     //window.onmousemove = handleMouseMove;
     //window.onmousedown = handleMouseDown;
@@ -230,16 +215,13 @@ function queueLoaded(event) {
     window.onkeyup = handleKeyUp;
 }
 
-function tickEvent(event) {//TODO - this is to move the enemy around, it will be useful to change
-    //Make sure enemy is within game - currently it's not quite there
+function tickEvent(event) {
     var timeFromLastUpdate = event.delta;
     cowboy.update(timeFromLastUpdate);
 
 }
 
 // function handleMouseMove(event) {
-//     //Offset the position by 45 pixels so mouse is in center of crosshair
-//     //TODO - may not need to do that later on
 //     crossHair.x = event.clientX-45;
 //     crossHair.y = event.clientY-45;
 // }
@@ -300,7 +282,8 @@ function handleKeyDown (e) {
             }else if(keyCode == 32) {
                 var shotX = crossHair.x + 45;
                 var shotY = crossHair.y + 45;
-
+                console.log(shotX + ' !!! ' + shotY);
+                console.log(cowboy.getX() + ' !!! ' + cowboy.getY());
                 if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
                     console.log('not all');
                     var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
@@ -309,7 +292,7 @@ function handleKeyDown (e) {
                     stage.addChild(text);
                     setTimeout(function() {stage.removeChild(text);}, 1500);
 
-                }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && cowboy.getState() !== 'winning') {
+                }else if(shotX >= cowboy.getX()- 25 - 20 && shotX <= cowboy.getX() - 25 + 10 && shotY <= cowboy.getY() + 40 && shotY >= cowboy.getY() - 35 && cowboy.getState() !== 'winning') {
                     cowboy.changeState('dead');
                     clearTimeout(cowboy.winning);
  
