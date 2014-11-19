@@ -7,12 +7,11 @@ var shootSpriteSheet;
 var walkSpriteSheet;
 var standSpriteSheet;
 var winSpriteSheet;
+var deadSpriteSheet;
 
 var map = [];
 var crossHair;
 var cowboy;
-
-
 
 var Enemy = (function() {
   
@@ -54,6 +53,11 @@ var Enemy = (function() {
     this.animationWinning.regX = 99;
     this.animationWinning.regY = 58;
     this.animationWinning.gotoAndPlay("win");
+
+    this.animationDead = new createjs.Sprite(deadSpriteSheet, "die");
+    this.animationDead.regX = 99;
+    this.animationDead.regY = 58;
+    this.animationDead.gotoAndPlay("die");
   }
 
   Enemy.prototype.changeState = function(newState) {
@@ -84,9 +88,9 @@ var Enemy = (function() {
             stage.addChild(this.animationWinning); break;
         case 'dead':
             stage.removeChild(this.fireText);
-            stage.removeChild(this.animationWalking);
+            stage.removeChild(this.animationShooting);
             stage.removeChild(crossHair);
-            stage.addChild(this.standAnimation); break;
+            stage.addChild(this.animationDead); break;
     }
   };
 
@@ -150,7 +154,8 @@ window.onload = function() {
         {id: 'cowboyWalking', src: 'assets/walkingSpriteSheet.png'},
         {id: 'cowboyShooting', src: 'assets/shootingSpriteSheet.png'},
         {id: 'cowboyStanding', src: 'assets/standingSpriteSheet.png'},
-        {id: 'cowboyWinning', src: 'assets/winSpriteSheet.png'}
+        {id: 'cowboyWinning', src: 'assets/winSpriteSheet.png'},
+        {id: 'cowboyDead', src: 'assets/deadSpriteSheet.png'}
     ]);
     queue.load();
 };
@@ -169,7 +174,6 @@ function queueLoaded(event) {
     //Play background music
     createjs.Sound.play("background", {loop: -1});
 
-    //Create enemy spritesheet
     walkSpriteSheet = new createjs.SpriteSheet({
        "images": [queue.getResult('cowboyWalking')],
         "frames": {"width": 128, "height" : 128},
@@ -177,7 +181,6 @@ function queueLoaded(event) {
         'framerate': 20
     });
 
-    //Create enemy death spritesheet
     shootSpriteSheet = new createjs.SpriteSheet({
         "images": [queue.getResult('cowboyShooting')],
         "frames": {"width": 128, "height": 128},
@@ -196,6 +199,13 @@ function queueLoaded(event) {
         "images": [queue.getResult('cowboyWinning')],
         "frames": {"width": 128, "height": 128},
         "animations": {"win": {"frames": [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1], "speed": 0.7}},
+        'framerate': 20
+    });
+
+    deadSpriteSheet = new createjs.SpriteSheet({
+        "images": [queue.getResult('cowboyDead')],
+        "frames": {"width": 128, "height": 128},
+        "animations": {"die": [0, 7, false, 1]},
         'framerate': 20
     });
 
