@@ -54,47 +54,6 @@ a {
   text-align: center;
   background-color: grey;
 }
-#menu.main {
-  background-image: url('imgs/menu-bg.png');
-}
-#menu.credits {
-  background-image: url('imgs/credits-bg.png');
-}
-
-#progress {
-  height: 12%;
-  margin: auto;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-}
-#percent {
-  color: white;
-  font-weight: bold;
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-}
-#progress-bar {
-  width: 200px;
-}
-
-.sound {
-  display: none;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 30px;
-  height: 25px;
-  cursor: pointer;
-  z-index: 3;
-}
-.sound-on {
-  background-image: url('imgs/soundOn.png');
-  background-repeat: no-repeat;
-}
-.sound-off {
-  background-image: url('imgs/soundOff.png');
-  background-repeat: no-repeat;
-}
-
 #main {
   display: none;
   height: 60%;
@@ -158,13 +117,3 @@ a {
 .back, .back:hover {
   margin-top: 10px;
 }
-
-/*#game-over {
-  display: none;
-  text-align: center;
-  padding-top: 92px;
-  z-index: 1;
-  width: 600px;
-  height: 360px;
-  position: absolute;
-}*/
