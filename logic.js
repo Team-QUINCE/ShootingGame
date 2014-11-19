@@ -172,16 +172,16 @@ var Enemy = (function() {
             this.timer = new Date().getTime();
             stage.removeChild(this.standAnimation);
 
-            crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
-            setCrossHairPosition();
-            stage.addChild(crossHair);
+            stage.addChild(this.fireText);
+            stage.addChild(this.maxReactionText);
 
             this.animationShooting.x = this.x;
             this.animationShooting.y = this.y;
             stage.addChild(this.animationShooting);
 
-            stage.addChild(this.fireText);
-            stage.addChild(this.maxReactionText); break;
+            crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
+            setCrossHairPosition();
+            stage.addChild(crossHair); break;
 
         case 'winning':
             createjs.Sound.play("shot");
@@ -248,50 +248,46 @@ function handleKeyDown (e) {
 
     map[e.keyCode] = true;
 
-    for(var i in map) {
-        if(map[i]) {
-            var keyCode = i;
-            
-            if(keyCode == 37) {
-                crossHair.x -= 10;
+    if(map[37]) {
+        crossHair.x -= 10;
+    }
+    if(map[39]) {
+        crossHair.x += 10;
+    }
+    if(map[38]) {
+        crossHair.y -= 10;
+    }
+    if(map[40]) {
+        crossHair.y += 10;
+    }
+    if(map[32]) {
+        var shotX = crossHair.x + 45;
+        var shotY = crossHair.y + 45;
+        console.log(shotX + ' !!! ' + shotY);
+        console.log(cowboy.getX() + ' !!! ' + cowboy.getY());
+        
+        if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
+            console.log('not all');
+            var text = new createjs.Text('You are not allowed to shoot !', '36px Arial', '#FFF');
+            text.x = 200;
+            text.y = 50;
+            stage.addChild(text);
+            setTimeout(function() {stage.removeChild(text);}, 1500);
 
-            }else if(keyCode == 39) {
-                crossHair.x += 10;
-            }else if(keyCode == 38) {
-                crossHair.y -= 10;
+        }else if(shotX >= cowboy.getX()- 25 - 20 && shotX <= cowboy.getX() - 25 + 10 && shotY <= cowboy.getY() + 40 && shotY >= cowboy.getY() - 35 && cowboy.getState() !== 'winning') {
+            cowboy.changeState('dead');
+            clearTimeout(cowboy.winning);
 
-            }else if(keyCode == 40) {
-                crossHair.y += 10;
+            var textWin = new createjs.Text('You win !', '36px Monotype Corsiva', '#FFF');
+            textWin.x = 275;
+            textWin.y = 20;
+            stage.addChild(textWin);
 
-            }else if(keyCode == 32) {
-                var shotX = crossHair.x + 45;
-                var shotY = crossHair.y + 45;
-                console.log(shotX + ' !!! ' + shotY);
-                console.log(cowboy.getX() + ' !!! ' + cowboy.getY());
-                if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
-                    console.log('not all');
-                    var text = new createjs.Text('You are not allowed to shoot !', '36px Arial', '#FFF');
-                    text.x = 200;
-                    text.y = 50;
-                    stage.addChild(text);
-                    setTimeout(function() {stage.removeChild(text);}, 1500);
-
-                }else if(shotX >= cowboy.getX()- 25 - 20 && shotX <= cowboy.getX() - 25 + 10 && shotY <= cowboy.getY() + 40 && shotY >= cowboy.getY() - 35 && cowboy.getState() !== 'winning') {
-                    cowboy.changeState('dead');
-                    clearTimeout(cowboy.winning);
- 
-                    var textWin = new createjs.Text('You win !', '36px Monotype Corsiva', '#FFF');
-                    textWin.x = 275;
-                    textWin.y = 20;
-                    stage.addChild(textWin);
-
-                    createjs.Sound.play('shot');
-                }else if(cowboy.getState() !== 'winning'){
-                    createjs.Sound.play('shot');
-                }
-            }
+            createjs.Sound.play('shot');
+        }else if(cowboy.getState() !== 'winning'){
+            createjs.Sound.play('shot');
         }
-    }    
+    }
 }
 
 function setCrossHairPosition () {
