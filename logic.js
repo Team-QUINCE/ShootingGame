@@ -18,16 +18,15 @@ var Enemy = (function() {
   function Enemy(minimumReactionTime) {
     
     this.shootDelay = (Math.random() * 2 + 3) * 1000;  
-    this.reactionTime = (Math.random() + minimumReactionTime) * 1000;
+    this.reactionTime = (Math.random() * 2 + minimumReactionTime) * 1000;
     this.walkingTime = 3400;
 
-    this.startTime = new Date().getTime();
     this.x = 50;
     this.y = 250;
     this.state = 'walking';
 
-    this.fireText = createTextContainer('FIRE !!!', 20, 150);
-    this.deadText = createTextContainer('You are dead !', 5, 225);
+    this.fireText = createTextContainer('FIRE !!!', 20, 120);
+    this.deadText = createTextContainer('You are dead !', 15, 155);
     
 
     this.animationWalking = new createjs.Sprite(walkSpriteSheet, "walk");
@@ -79,6 +78,10 @@ var Enemy = (function() {
             stage.addChild(this.animationShooting);
             stage.addChild(this.fireText); break;
         case 'winning':
+            createjs.Sound.play("shot");
+            setTimeout(function() { createjs.Sound.play("shot"); }, 1500);
+            setTimeout(function() { createjs.Sound.play("shot"); }, 2500);
+            setTimeout(function() { createjs.Sound.play("shot"); }, 4000);
             stage.removeChild(this.fireText);
             stage.removeChild(crossHair);
             stage.removeChild(this.animationShooting);
@@ -90,6 +93,8 @@ var Enemy = (function() {
             stage.removeChild(this.fireText);
             stage.removeChild(this.animationShooting);
             stage.removeChild(crossHair);
+            this.animationDead.x = this.x;
+            this.animationDead.y = this.y;
             stage.addChild(this.animationDead); break;
     }
   };
@@ -150,7 +155,6 @@ window.onload = function() {
         {id: 'background', src: 'assets/countryside.mp3'},
         {id: 'gameOverSound', src: 'assets/gameOver.mp3'},
         {id: 'tick', src: 'assets/tick.mp3'},
-        {id: 'deathSound', src: 'assets/die.mp3'},
         {id: 'cowboyWalking', src: 'assets/walkingSpriteSheet.png'},
         {id: 'cowboyShooting', src: 'assets/shootingSpriteSheet.png'},
         {id: 'cowboyStanding', src: 'assets/standingSpriteSheet.png'},
@@ -164,12 +168,6 @@ function queueLoaded(event) {
     //Add background image
     var backgroundImage = new createjs.Bitmap(queue.getResult("backgroundImage"));
     stage.addChild(backgroundImage);
-
-    //Add Score
-    // scoreText = new createjs.Text("1UP: " + score.toString(), "36px Arial", "#FFF");
-    // scoreText.x = 10;
-    // scoreText.y = 10;
-    // stage.addChild(scoreText);
 
     //Play background music
     createjs.Sound.play("background", {loop: -1});
@@ -209,7 +207,7 @@ function queueLoaded(event) {
         'framerate': 20
     });
 
-    cowboy = new Enemy(3.5);
+    cowboy = new Enemy(2);
     cowboy.standing = setTimeout(function() { cowboy.changeState('standing'); }, cowboy.walkingTime);
     cowboy.shooting = setTimeout(function() { cowboy.changeState('shooting'); }, cowboy.shootDelay + cowboy.walkingTime);
     cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + cowboy.walkingTime);
@@ -230,39 +228,6 @@ function tickEvent(event) {
     cowboy.update(timeFromLastUpdate);
 
 }
-
-// function handleMouseMove(event) {
-//     crossHair.x = event.clientX-45;
-//     crossHair.y = event.clientY-45;
-// }
-
-// function handleMouseDown(event) {
-
-//     var shotX = Math.round(event.clientX);
-//     var shotY = Math.round(event.clientY);
-
-//     if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
-
-//         var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
-//         text.x = 200;
-//         text.y = 50;
-//         stage.addChild(text);
-//         setTimeout(function() {stage.removeChild(text);}, 1500);
-
-//     }else if(shotX >= cowboy.getX() - 20 && shotX <= cowboy.getX() + 20 && shotY <= cowboy.getY() + 20 && shotY >= cowboy.getY() - 20 && cowboy.getState() !== 'winning') {
-//         cowboy.changeState('dead');
-//         clearTimeout(cowboy.winning);
-
-//         var textWin = new createjs.Text("You win !", "36px Arial", "#FFF");
-//         textWin.x = 200;
-//         textWin.y = 10;
-//         stage.addChild(textWin);
-
-//         createjs.Sound.play("shot");
-//     }else {
-//         createjs.Sound.play("shot");
-//     }
-// }
 
 function handleKeyUp (e) {
     if (e.keyCode in map) {
@@ -296,7 +261,7 @@ function handleKeyDown (e) {
                 console.log(cowboy.getX() + ' !!! ' + cowboy.getY());
                 if(cowboy.getState() !== 'shooting' && cowboy.getState() !== 'dead' && cowboy.getState() !== 'winning') {
                     console.log('not all');
-                    var text = new createjs.Text("You are not allowed to shoot !", "36px Arial", "#FFF");
+                    var text = new createjs.Text('You are not allowed to shoot !', '36px Arial', '#FFF');
                     text.x = 200;
                     text.y = 50;
                     stage.addChild(text);
@@ -306,14 +271,14 @@ function handleKeyDown (e) {
                     cowboy.changeState('dead');
                     clearTimeout(cowboy.winning);
  
-                    var textWin = new createjs.Text("You win !", "36px Arial", "#FFF");
-                    textWin.x = 200;
-                    textWin.y = 10;
+                    var textWin = new createjs.Text('You win !', '36px Monotype Corsiva', '#FFF');
+                    textWin.x = 275;
+                    textWin.y = 20;
                     stage.addChild(textWin);
 
-                    createjs.Sound.play("shot");
+                    createjs.Sound.play('shot');
                 }else if(cowboy.getState() !== 'winning'){
-                    createjs.Sound.play("shot");
+                    createjs.Sound.play('shot');
                 }
             }
         }
@@ -324,17 +289,17 @@ function createTextContainer(textInput, whiteSpace, width) {
     container = new createjs.Container(); 
 
     var g = new createjs.Graphics(); 
-    g.setStrokeStyle(2); g.beginStroke(createjs.Graphics.getRGB(0, 0, 0)); g.beginFill(createjs.Graphics.getRGB(255, 255, 255)); g.drawRoundRect(0, 0, width, 60, 20);
+    g.setStrokeStyle(2); g.beginStroke(createjs.Graphics.getRGB(0, 0, 0)); g.beginFill(createjs.Graphics.getRGB(255, 255, 255)); g.drawRoundRect(0, 0, width, 40, 20);
     var s = new createjs.Shape(g);
 
-    var text = new createjs.Text(textInput, "32px Arial", "#000");
+    var text = new createjs.Text(textInput, '24px Monotype Corsiva', '#000');
     text.x = whiteSpace;
     text.y = 10;
     
     container.addChild(s);
     container.addChild(text);
-    container.x = 50;
-    container.y = 50;
+    container.x = 250;
+    container.y = 135;
 
     return container;
 }
