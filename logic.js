@@ -1,3 +1,5 @@
+var ShootingGame = ShootingGame || {};
+
 var context;
 var queue;
 var WIDTH = 691;
@@ -12,126 +14,6 @@ var deadSpriteSheet;
 var map = [];
 var crossHair;
 var cowboy;
-
-var Enemy = (function() {
-  
-  function Enemy(minimumReactionTime) {
-    
-    this.shootDelay = (Math.random() * 2 + 3) * 1000;  
-    this.reactionTime = (Math.random() * 2 + minimumReactionTime) * 1000;
-    this.walkingTime = 3400;
-
-    this.x = 50;
-    this.y = 250;
-    this.state = 'walking';
-
-    this.fireText = createTextContainer('FIRE !!!', 20, 120);
-    this.deadText = createTextContainer('You are dead !', 15, 155);
-    
-
-    this.animationWalking = new createjs.Sprite(walkSpriteSheet, "walk");
-    this.animationWalking.regX = 99;
-    this.animationWalking.regY = 58;
-    this.animationWalking.x = this.x;
-    this.animationWalking.y = this.y;
-    this.animationWalking.gotoAndPlay("walk");
-    stage.addChildAt(this.animationWalking, 1);
-
-    this.standAnimation = new createjs.Sprite(standSpriteSheet, "stand");
-    this.standAnimation.regX = 99;
-    this.standAnimation.regY = 58;
-    this.standAnimation.gotoAndPlay("stand");
-
-    // ***shooting animation
-    this.animationShooting = new createjs.Sprite(shootSpriteSheet, "shoot");
-    this.animationShooting.regX = 99;
-    this.animationShooting.regY = 58;
-    this.animationShooting.gotoAndPlay("shoot");
-
-    this.animationWinning = new createjs.Sprite(winSpriteSheet, "win");
-    this.animationWinning.regX = 99;
-    this.animationWinning.regY = 58;
-    this.animationWinning.gotoAndPlay("win");
-
-    this.animationDead = new createjs.Sprite(deadSpriteSheet, "die");
-    this.animationDead.regX = 99;
-    this.animationDead.regY = 58;
-    this.animationDead.gotoAndPlay("die");
-  }
-
-  Enemy.prototype.changeState = function(newState) {
-    this.state = newState;
-
-    switch(this.state) {
-        case 'standing':
-            stage.removeChild(this.animationWalking);
-            this.standAnimation.x = this.x;
-            this.standAnimation.y = this.y;
-            stage.addChild(this.standAnimation); break;
-        case 'shooting':
-            stage.removeChild(this.standAnimation);
-            crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
-            setCrossHairPosition();
-            stage.addChild(crossHair);
-            this.animationShooting.x = this.x;
-            this.animationShooting.y = this.y;
-            stage.addChild(this.animationShooting);
-            stage.addChild(this.fireText); break;
-        case 'winning':
-            createjs.Sound.play("shot");
-            setTimeout(function() { createjs.Sound.play("shot"); }, 1500);
-            setTimeout(function() { createjs.Sound.play("shot"); }, 2500);
-            setTimeout(function() { createjs.Sound.play("shot"); }, 4000);
-            stage.removeChild(this.fireText);
-            stage.removeChild(crossHair);
-            stage.removeChild(this.animationShooting);
-            stage.addChild(this.deadText);
-            this.animationWinning.x = this.x;
-            this.animationWinning.y = this.y;
-            stage.addChild(this.animationWinning); break;
-        case 'dead':
-            stage.removeChild(this.fireText);
-            stage.removeChild(this.animationShooting);
-            stage.removeChild(crossHair);
-            this.animationDead.x = this.x;
-            this.animationDead.y = this.y;
-            stage.addChild(this.animationDead); break;
-    }
-  };
-
-  Enemy.prototype.update = function(timeFromLastUpdate) {
-
-    if(this.state === 'walking') {
-        var dx = timeFromLastUpdate / 1000 * 100;
-        this.x += dx;
-        this.animationWalking.x = this.x;  
-    }
-  };
-
-  Enemy.prototype.getState = function() {
-    return this.state;
-  };
-
-  Enemy.prototype.getX = function() {
-    return this.x;
-  };
-
-  Enemy.prototype.getY = function(state) {
-    return this.y;
-  };
-
-  return Enemy;
-})();
-
-function setCrossHairPosition () {
-    var side = Math.round(Math.random());
-
-    var leftBound = side === 0 ? 0 : 0.8 * WIDTH; 
-    var rightBound = side === 0 ? 0.2 * WIDTH : WIDTH;
-
-    crossHair.x = Math.random() * (rightBound - leftBound) + leftBound - 45;
-    crossHair.y = Math.random() * HEIGHT - 45;
-}
 
 window.onload = function() {
     //Setting up canvas
@@ -213,12 +95,10 @@ function queueLoaded(event) {
     cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + cowboy.walkingTime);
 
     //Add ticker
-    createjs.Ticker.setFPS(30);
+    createjs.Ticker.setFPS(45);
     createjs.Ticker.addEventListener('tick', stage);
     createjs.Ticker.addEventListener('tick', tickEvent);
 
-    //window.onmousemove = handleMouseMove;
-    //window.onmousedown = handleMouseDown;
     window.onkeydown = handleKeyDown;
     window.onkeyup = handleKeyUp;
 }
@@ -228,6 +108,135 @@ function tickEvent(event) {
     cowboy.update(timeFromLastUpdate);
 
 }
+
+var Enemy = (function() {
+  
+  function Enemy(minimumReactionTime) {
+    
+    this.shootDelay = (Math.random() * 2 + 3) * 1000;  
+    this.reactionTime = (Math.random() * 2 + minimumReactionTime) * 1000;
+    this.walkingTime = 3400;
+
+    this.x = 50;
+    this.y = 250;
+    this.state = 'walking';
+
+    this.fireText = createTextContainer('FIRE !!!', 20, 120);
+    this.deadText = createTextContainer('You are dead !', 15, 155);
+    
+    this.maxReactionText = new createjs.Text((this.reactionTime / 1000).toFixed(2).toString(), '24px Monotype Corsiva', '#000');
+    this.maxReactionText.x = 640;
+    this.maxReactionText.y = 280;
+
+    // *** ANIMATIONS ***
+    this.animationWalking = new createjs.Sprite(walkSpriteSheet, "walk");
+    this.animationWalking.regX = 99;
+    this.animationWalking.regY = 58;
+    this.animationWalking.x = this.x;
+    this.animationWalking.y = this.y;
+    this.animationWalking.gotoAndPlay("walk");
+    stage.addChildAt(this.animationWalking, 1);
+
+    this.standAnimation = new createjs.Sprite(standSpriteSheet, "stand");
+    this.standAnimation.regX = 99;
+    this.standAnimation.regY = 58;
+    this.standAnimation.gotoAndPlay("stand");
+
+    this.animationShooting = new createjs.Sprite(shootSpriteSheet, "shoot");
+    this.animationShooting.regX = 99;
+    this.animationShooting.regY = 58;
+    this.animationShooting.gotoAndPlay("shoot");
+
+    this.animationWinning = new createjs.Sprite(winSpriteSheet, "win");
+    this.animationWinning.regX = 99;
+    this.animationWinning.regY = 58;
+    this.animationWinning.gotoAndPlay("win");
+
+    this.animationDead = new createjs.Sprite(deadSpriteSheet, "die");
+    this.animationDead.regX = 99;
+    this.animationDead.regY = 58;
+    this.animationDead.gotoAndPlay("die");
+  }
+
+  Enemy.prototype.changeState = function(newState) {
+    this.state = newState;
+
+    switch(this.state) {
+        case 'standing':
+            stage.removeChild(this.animationWalking);
+            this.standAnimation.x = this.x;
+            this.standAnimation.y = this.y;
+            stage.addChild(this.standAnimation); break;
+
+        case 'shooting':
+            this.timer = new Date().getTime();
+            stage.removeChild(this.standAnimation);
+
+            crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
+            setCrossHairPosition();
+            stage.addChild(crossHair);
+
+            this.animationShooting.x = this.x;
+            this.animationShooting.y = this.y;
+            stage.addChild(this.animationShooting);
+
+            stage.addChild(this.fireText);
+            stage.addChild(this.maxReactionText); break;
+
+        case 'winning':
+            createjs.Sound.play("shot");
+            setTimeout(function() { createjs.Sound.play("shot"); }, 1500);
+            setTimeout(function() { createjs.Sound.play("shot"); }, 2500);
+            setTimeout(function() { createjs.Sound.play("shot"); }, 4000);
+
+            stage.removeChild(this.fireText);
+            stage.removeChild(crossHair);
+            stage.removeChild(this.animationShooting);
+
+            stage.addChild(this.deadText);
+            this.animationWinning.x = this.x;
+            this.animationWinning.y = this.y;
+            stage.addChild(this.animationWinning); break;
+
+        case 'dead':
+            stage.removeChild(this.fireText);
+            stage.removeChild(this.animationShooting);
+            stage.removeChild(crossHair);
+
+            this.reactionText = new createjs.Text('Your reaction: ' + ((new Date().getTime() - this.timer) / 1000).toFixed(2).toString(), '24px Monotype Corsiva', '#000');
+            this.reactionText.x = 513;
+            this.reactionText.y = 310;
+            stage.addChild(this.reactionText);
+
+            this.animationDead.x = this.x;
+            this.animationDead.y = this.y;
+            stage.addChild(this.animationDead); break;
+    }
+  };
+
+  Enemy.prototype.update = function(timeFromLastUpdate) {
+
+    if(this.state === 'walking') {
+        var dx = timeFromLastUpdate / 1000 * 100;
+        this.x += dx;
+        this.animationWalking.x = this.x;  
+    }
+  };
+
+  Enemy.prototype.getState = function() {
+    return this.state;
+  };
+
+  Enemy.prototype.getX = function() {
+    return this.x;
+  };
+
+  Enemy.prototype.getY = function(state) {
+    return this.y;
+  };
+
+  return Enemy;
+})();
 
 function handleKeyUp (e) {
     if (e.keyCode in map) {
@@ -283,6 +292,16 @@ function handleKeyDown (e) {
             }
         }
     }    
+}
+
+function setCrossHairPosition () {
+    var side = Math.round(Math.random());
+
+    var leftBound = side === 0 ? 0 : 0.8 * WIDTH; 
+    var rightBound = side === 0 ? 0.2 * WIDTH : WIDTH;
+
+    crossHair.x = Math.random() * (rightBound - leftBound) + leftBound - 45;
+    crossHair.y = Math.random() * HEIGHT - 45;
 }
 
 function createTextContainer(textInput, whiteSpace, width) {
