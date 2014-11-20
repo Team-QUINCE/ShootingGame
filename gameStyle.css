@@ -81,45 +81,11 @@ main>button:hover{
     margin-top: 4%;
     box-shadow: 0 4px 0 #666666;
     background: #ffdc23;
-    background-image: url("images/crosshair.png")
 }
 
 main>button>a:hover{
     text-shadow: 1px 1px 10px #fc070d;
     color: rgba(255, 0, 0, 0.74);
-}
-
-#credits {
-    font-size: 3em;
-    font-family: Western;
-    font-weight: bold;
-    color: #ffffff;
-    text-shadow: 1px 1px 10px #a30000;
-    margin-left: 44%;
-    margin-right: 44%;
-    margin-bottom: 2%;
-}
-
-#artwork, #developers, #gameLogic {
-    font-size: 1.7em;
-    font-family: TheDeadSaloon;
-    font-weight: bold;
-    color: #ff0000;
-    text-shadow: 1px 1px 10px #000000;
-    margin-left: 38%;
-    margin-right: 38%;
-}
-
-#artwork>a, #developers>a, #gameLogic>a {
-    font-family: LosBanditos;
-    text-decoration: none;
-    color: #ffffff;
-    text-shadow: 1px 1px 10px #000000;
-
-}
-
-#artwork>a:hover, #developers>a:hover, #gameLogic>a:hover{
-    text-shadow: 1px 1px 10px #a30000;
 }
 
 /*CANVAS*/

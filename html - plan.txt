@@ -1,0 +1,12 @@
+main>
+	header> 
+		- logo
+		- h1 - Shooting game
+	Main> 
+		 - game picture
+		 - start button 
+	footer>
+	    Credits 
+		- section
+	 	- 3 article - inline
+ 
