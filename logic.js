@@ -141,6 +141,13 @@ ShootingGame.queueLoaded = function(event) {
     ShootingGame.entity.cowboy = cowboy;
 
     ShootingGame.entity.crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
+    ShootingGame.entity.crossHair.dx = 5;
+    ShootingGame.entity.crossHair.dy = 5;
+
+    ShootingGame.entity.crossHair.update = function() {
+        ShootingGame.entity.crossHair.crossHair.x = ShootingGame.entity.crossHair.crossHair.x + ShootingGame.entity.crossHair.dx;
+        ShootingGame.entity.crossHair.crossHair.y = ShootingGame.entity.crossHair.crossHair.y + ShootingGame.entity.crossHair.dy;
+    };
 
     //Add ticker
     createjs.Ticker.setFPS(45);
@@ -154,6 +161,7 @@ ShootingGame.queueLoaded = function(event) {
 ShootingGame.tickEvent = function(event) {
     var timeFromLastUpdate = event.delta;
     ShootingGame.entity.cowboy.update(timeFromLastUpdate);
+    ShootingGame.entity.crossHair.update();
 };
 
 ShootingGame.entity.Enemy = (function() {
@@ -247,11 +255,11 @@ ShootingGame.entity.Enemy = (function() {
 
     Enemy.prototype.update = function(timeFromLastUpdate) {
 
-    if(this.state === 'walking') {
-        var dx = timeFromLastUpdate / 1000 * 100;
-        this.x += dx;
-        this.animationWalking.x = this.x;  
-    }
+        if(this.state === 'walking') {
+            var dx = timeFromLastUpdate / 1000 * 100;
+            this.x += dx;
+            this.animationWalking.x = this.x;  
+        }
     };
 
     Enemy.prototype.getState = function() {
@@ -295,19 +303,19 @@ ShootingGame.keyHandle.handleKeyDown = function(e) {
 
     keyMap[e.keyCode] = true;
 
-    if(keyMap[100]) {
+    if(keyMap[65]) {
         crossHair.x -= 10;
     }
-    if(keyMap[102]) {
+    if(keyMap[68]) {
         crossHair.x += 10;
     }
-    if(keyMap[104]) {
+    if(keyMap[87]) {
         crossHair.y -= 10;
     }
-    if(keyMap[101]) {
+    if(keyMap[83]) {
         crossHair.y += 10;
     }
-    if(keyMap[67]) {
+    if(keyMap[77]) {
         var shotX = crossHair.x + 45;
         var shotY = crossHair.y + 45;
         var cowboy = ShootingGame.entity.cowboy;
