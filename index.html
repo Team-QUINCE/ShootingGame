@@ -2,32 +2,39 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Game</title>
-    <link href="../normalize.css" rel="stylesheet" type="text/css" />
-    <link href="../shootingGame.css" rel="stylesheet" type="text/css" />
-    <script language="javascript" type="text/javascript" src="http://code.createjs.com/createjs-2013.12.12.min.js"></script>
+    <title>Team QUINCE - Shooting Game</title>
+    <script language="javascript" type="text/javascript"
+            src="http://code.createjs.com/createjs-2013.12.12.min.js"></script>
     <script language="javascript" type="text/javascript" src="logic.js"></script>
+
+    <link href="homePageStyle.css" rel="stylesheet" type="text/css">
 </head>
 <body>
+<header>
+    <img id="logo" src="images/teamLogo.png">
+
+    <h1 id="headTitle">Shooting Game</h1>
+</header>
+
 <main>
-	<header>
-        	<h1>Shooting Game</h1>
-		<img></img>
-	</header>        
-	<main>	
-		<img></img>
-		<a href="start.html" class="button play">Start Game</a></li>
-	</main>        
-	<footer>
-		<div id="credits" class="button credits">Credits</div>
-    <div class="artwork">Character design and art: <a href="https://www.facebook.com/profile.php?id=100003682665431&fref=ts">Plamen Grozdev</a></div>
-    
-    <div class="developer">Developers:</div>
-    <ul>          
-        <li class="developer"><a href="https://www.facebook.com/profile.php?id=100006411431393&fref=ts">Pavel Rashkov</a></li>
-      	<li class="developer"><a href="https://www.facebook.com/people/%D0%98%D0%BD%D0%B6-%D0%90%D0%BD%D0%B3%D0%B5%D0%BB-%D0%97%D0%BB%D0%B0%D1%82%D0%B5%D0%BD%D0%BE%D0%B2/100000600516012">Angel Zlatenov</a></li>
+    <img id="gameImage" src="images/game.png">
+    <button><a href="startGame.html">Start game!</a></button>
+</main>
+
+<footer>
+    <div id="credits" class="button credits">Credits</div>
+    <div class="artwork">Character design and art: <a
+            href="https://www.facebook.com/profile.php?id=100003682665431&fref=ts">Plamen Grozdev</a></div>
+
+    <div id="developers">Developers:</div>
+    <ul>
+        <li><a href="https://www.facebook.com/profile.php?id=100006411431393&fref=ts">Pavel
+            Rashkov</a></li>
+        <li><a href="https://www.facebook.com/people/%D0%98%D0%BD%D0%B6-%D0%90%D0%BD%D0%B3%D0%B5%D0%BB-%D0%97%D0%BB%D0%B0%D1%82%D0%B5%D0%BD%D0%BE%D0%B2/100000600516012">Angel
+            Zlatenov</a></li>
     </ul>
-    <div class="logic">Game logic:<a href="https://www.facebook.com/boyan.baychev?fref=ts">Boyan Baychev</div>
+    <div id="gameLogic">Game logic:<a href="https://www.facebook.com/boyan.baychev?fref=ts">Boyan Baychev</div>
+</footer>
 
 </body>
 </html>
