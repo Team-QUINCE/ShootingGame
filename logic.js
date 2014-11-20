@@ -134,7 +134,7 @@ ShootingGame.queueLoaded = function(event) {
     ShootingGame.assets.textBox.deadText = ShootingGame.assets.textBox.createTextContainer('You are dead !', 15, 155);
 
     // Create entities
-    var cowboy = new ShootingGame.entity.Enemy(2);
+    var cowboy = new ShootingGame.entity.Enemy(2.5);
     cowboy.standing = setTimeout(function() { cowboy.changeState('standing'); }, cowboy.walkingTime);
     cowboy.shooting = setTimeout(function() { cowboy.changeState('shooting'); }, cowboy.shootDelay + cowboy.walkingTime);
     cowboy.winning = setTimeout(function() { cowboy.changeState('winning'); }, cowboy.reactionTime + cowboy.shootDelay + cowboy.walkingTime);
@@ -295,19 +295,19 @@ ShootingGame.keyHandle.handleKeyDown = function(e) {
 
     keyMap[e.keyCode] = true;
 
-    if(keyMap[37]) {
+    if(keyMap[100]) {
         crossHair.x -= 10;
     }
-    if(keyMap[39]) {
+    if(keyMap[102]) {
         crossHair.x += 10;
     }
-    if(keyMap[38]) {
+    if(keyMap[104]) {
         crossHair.y -= 10;
     }
-    if(keyMap[40]) {
+    if(keyMap[101]) {
         crossHair.y += 10;
     }
-    if(keyMap[32]) {
+    if(keyMap[67]) {
         var shotX = crossHair.x + 45;
         var shotY = crossHair.y + 45;
         var cowboy = ShootingGame.entity.cowboy;
