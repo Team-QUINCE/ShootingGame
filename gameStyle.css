@@ -98,3 +98,16 @@ canvas {
     width: 600px;
     height: 360px;
 }
+
+#ctrls{
+    font-family: LosBanditos;
+    color: #ffffff;
+    font-size: 1.3em;
+    width: 610px;
+    height: 50px;
+    text-shadow: 1px 1px 10px #000000;
+}
+
+#controls {
+    color: #ff0000;
+}
