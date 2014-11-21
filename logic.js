@@ -141,13 +141,7 @@ ShootingGame.queueLoaded = function(event) {
     ShootingGame.entity.cowboy = cowboy;
 
     ShootingGame.entity.crossHair = new createjs.Bitmap(queue.getResult("crossHair"));
-    ShootingGame.entity.crossHair.dx = 5;
-    ShootingGame.entity.crossHair.dy = 5;
 
-    ShootingGame.entity.crossHair.update = function() {
-        ShootingGame.entity.crossHair.crossHair.x = ShootingGame.entity.crossHair.crossHair.x + ShootingGame.entity.crossHair.dx;
-        ShootingGame.entity.crossHair.crossHair.y = ShootingGame.entity.crossHair.crossHair.y + ShootingGame.entity.crossHair.dy;
-    };
 
     //Add ticker
     createjs.Ticker.setFPS(45);
